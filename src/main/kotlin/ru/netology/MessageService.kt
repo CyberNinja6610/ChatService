@@ -14,24 +14,19 @@ object MessageService : EntityService<Message> {
         return items.firstOrNull { it.id == id && (it.fromUserId == userId || it.toUserId == userId) }
     }
 
-    fun getByChatId(chatId: Int, offset: Int?, limit: Int?): List<Message> {
-        var messages = items.filter { it.chatId == chatId }
-        if (offset != null) {
-            messages = messages.filter { message -> message.id >= offset }
-        }
-        if (limit != null) {
-            messages = messages.slice(0..limit);
-        }
-        return messages
+    fun getByChatId(chatId: Int, offset: Int, limit: Int): List<Message> {
+        return items.asSequence().filter { it.chatId == chatId }.filter { message -> message.id >= offset }.take(limit)
+            .toList()
+    }
+
+    fun getByChatId(chatId: Int): List<Message> {
+        return items.filter { it.chatId == chatId }
     }
 
     //Сделать сообщения прочитанными
-    fun getByChatId(chatId: Int, offset: Int?, limit: Int?, userId: Int): List<Message> {
-        var messages = getByChatId(chatId = chatId, offset = null, limit = null)
-        if (userId > 0) {
-            messages.filter { userId != it.fromUserId }
-                .forEach { this.edit(it.copy(viewed = true), it.id, userId = userId) }
-        }
+    fun getByChatId(chatId: Int, userId: Int): List<Message> {
+        val messages = getByChatId(chatId = chatId).filter { userId != it.fromUserId }
+        messages.forEach { this.edit(it.copy(viewed = true), it.id, userId = userId) }
         return messages
     }
 

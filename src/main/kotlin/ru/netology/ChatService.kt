@@ -6,7 +6,7 @@ object ChatService : EntityService<Chat> {
     private var uniqueId = 0
 
     fun getExistedChat(userIds: Set<Int>): Chat? {
-        return items.firstOrNull { it.userIds.equals(userIds) }
+        return items.firstOrNull { it.userIds == userIds }
     }
 
     override fun getById(id: Int): Chat? {
@@ -37,15 +37,13 @@ object ChatService : EntityService<Chat> {
         val index = items.indexOf(curElement)
         MessageService.getByChatId(
             chatId = id,
-            limit = null,
-            offset = null,
         ).forEach { MessageService.delete(it.id) };
         return items.removeAt(index)
     }
 
     fun getUnreadChatsCount(userId: Int): Int {
         return items.filter { it.userIds.contains(userId) }.filter {
-            MessageService.getByChatId(chatId = it.id, offset = null, limit = null)
+            MessageService.getByChatId(chatId = it.id)
                 .any { message -> !message.viewed && message.fromUserId != userId }
         }.size
     }

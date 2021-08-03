@@ -39,7 +39,7 @@ class MessageServiceTest {
         return MessageService.add(message)
     }
 
-    fun addChat(fromUserId: Int = 1, toUserId: Int = 1): Chat {
+    fun addChat(fromUserId: Int = 1, toUserId: Int = 2): Chat {
         val userIds = setOf(fromUserId, toUserId)
         val chat = Chat(userIds = userIds)
         return ChatService.add(chat)
@@ -87,20 +87,23 @@ class MessageServiceTest {
     }
 
     @Test
-    fun getByChatId_offset() {
+    fun getByChatId_offsetAndLimit() {
         resetServices()
-        val message = addNewMessage()
-        val newMessage = message.copy(text = "Здорова", id = 0)
-        val result = MessageService.getByChatId(chatId = message.chatId, offset = message.id, limit = null)
-        assertEquals(1, result.size)
+        val chat = addChat()
+        addNewMessage()
+        addNewMessage()
+        addNewMessage()
+        addNewMessage()
+        val result = MessageService.getByChatId(chatId = chat.id, offset = 1, limit = 2)
+        assertEquals(2, result.size)
     }
 
     @Test
-    fun getByChatId_makeViewd() {
+    fun getByChatId_makeViewed() {
         resetServices()
         val message = addNewMessage()
         val result =
-            MessageService.getByChatId(chatId = message.chatId, offset = null, limit = null, userId = message.toUserId)
+            MessageService.getByChatId(chatId = message.chatId, userId = message.toUserId)
         var newMessage = MessageService.getById(message.id);
         assertTrue(newMessage?.viewed ?: false)
     }
